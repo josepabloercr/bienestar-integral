@@ -1,0 +1,7 @@
+{
+  "name": "Bienestar Integral - Midnight Sanctuary",
+  "description": "Una plataforma premium de bienestar para el control de peso, nutrición y ejercicio con asistencia de IA.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
