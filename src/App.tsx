@@ -10,8 +10,9 @@ import Profile from './components/Profile';
 import Landing from './components/Landing';
 import AIChat from './components/AIChat';
 import Library from './components/Library';
-import { auth, logout as firebaseLogout } from './firebase';
+import { auth, db, logout as firebaseLogout } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { notificationService } from './services/notificationService';
 
 export type Screen = 'landing' | 'dashboard' | 'meals' | 'activity' | 'hydration' | 'profile' | 'chat' | 'library';
@@ -71,7 +72,12 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
-  }, [userProfile]);
+    if (user && userProfile.reminders) {
+      setDoc(doc(db, 'users', user.uid), {
+        reminders: userProfile.reminders
+      }, { merge: true }).catch(e => console.error("Error saving reminders to db:", e));
+    }
+  }, [userProfile, user]);
 
   useEffect(() => {
     localStorage.setItem('weightLogs', JSON.stringify(weightLogs));

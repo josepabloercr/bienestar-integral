@@ -1,6 +1,11 @@
+/// <reference types="vite/client" />
 /**
  * Service to handle browser notifications for water reminders.
  */
+
+import { messaging, db, auth } from '../firebase';
+import { getToken } from 'firebase/messaging';
+import { doc, setDoc } from 'firebase/firestore';
 
 class NotificationService {
   private timers: number[] = [];
@@ -15,6 +20,7 @@ class NotificationService {
     }
 
     if (Notification.permission === 'granted') {
+      await this.saveToken();
       return true;
     }
 
@@ -22,10 +28,36 @@ class NotificationService {
       console.log('Requesting notification permission...');
       const permission = await Notification.requestPermission();
       console.log('Notification permission result:', permission);
-      return permission === 'granted';
+      if (permission === 'granted') {
+        await this.saveToken();
+        return true;
+      }
+      return false;
     }
 
     return false;
+  }
+
+  async saveToken() {
+    try {
+      if (!auth.currentUser) return;
+      const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+      if (!vapidKey) {
+        console.warn('Vapid Key missing, cannot register for Push');
+        return;
+      }
+
+      const currentToken = await getToken(messaging, { vapidKey });
+      if (currentToken) {
+        await setDoc(doc(db, 'users', auth.currentUser.uid), {
+          fcmToken: currentToken,
+          lastTokenUpdate: new Date().toISOString()
+        }, { merge: true });
+        console.log('FCM Token Guardado!');
+      }
+    } catch (error) {
+      console.error('Error obtaining/saving FCM token', error);
+    }
   }
 
   /**
