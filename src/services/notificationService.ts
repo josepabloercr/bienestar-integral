@@ -8,8 +8,6 @@ import { getToken } from 'firebase/messaging';
 import { doc, setDoc } from 'firebase/firestore';
 
 class NotificationService {
-  private timers: number[] = [];
-
   /**
    * Request permission to show notifications
    */
@@ -106,54 +104,11 @@ class NotificationService {
 
   /**
    * Schedule notifications based on a list of times (HH:mm)
-   */
-  scheduleReminders(times: string[]) {
-    this.clearAllNotifications();
-
-    if (Notification.permission !== 'granted') return;
-
-    const now = new Date();
-
-    times.forEach(timeStr => {
-      if (!timeStr || !timeStr.includes(':')) return;
-      
-      const parts = timeStr.split(':');
-      const hours = parseInt(parts[0], 10);
-      const minutes = parseInt(parts[1], 10);
-
-      if (isNaN(hours) || isNaN(minutes)) return;
-
-      const scheduledTime = new Date();
-      scheduledTime.setHours(hours, minutes, 0, 0);
-
-      // If the time has already passed today, schedule for tomorrow
-      if (scheduledTime.getTime() <= now.getTime()) {
-        scheduledTime.setDate(scheduledTime.getDate() + 1);
-      }
-
-      const delay = scheduledTime.getTime() - now.getTime();
-
-      const timerId = window.setTimeout(() => {
-        this.showNotification(
-          '¡Hora de Hidratarte! 💧',
-          'Tu cuerpo necesita agua para mantener su vitalidad. ¡Toma un vaso ahora!'
-        );
-        // Re-schedule for the next day
-        this.scheduleReminders(times);
-      }, delay);
-
-      this.timers.push(timerId);
-    });
-
-    console.log(`Scheduled ${this.timers.length} water reminders.`);
-  }
-
   /**
    * Clear all scheduled timers
    */
   clearAllNotifications() {
-    this.timers.forEach(id => window.clearTimeout(id));
-    this.timers = [];
+    // No longer needed as we use FCM cron jobs, but kept for interface compatibility
   }
 }
 

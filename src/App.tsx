@@ -99,15 +99,11 @@ export default function App() {
     localStorage.setItem('resources', JSON.stringify(resources));
   }, [resources]);
 
-  // Handle Notifications Scheduling
+  // Handle Notifications Scheduling (now handled by FCM Cron)
   useEffect(() => {
-    if (user && userProfile.reminders && userProfile.reminders.length > 0) {
-      notificationService.scheduleReminders(userProfile.reminders);
-    } else {
-      notificationService.clearAllNotifications();
-    }
+    // We only keep the clear compatibility function to not break references
     return () => notificationService.clearAllNotifications();
-  }, [userProfile.reminders, user]);
+  }, [user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
