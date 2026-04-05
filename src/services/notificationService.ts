@@ -115,7 +115,14 @@ class NotificationService {
     const now = new Date();
 
     times.forEach(timeStr => {
-      const [hours, minutes] = timeStr.split(':').map(Number);
+      if (!timeStr || !timeStr.includes(':')) return;
+      
+      const parts = timeStr.split(':');
+      const hours = parseInt(parts[0], 10);
+      const minutes = parseInt(parts[1], 10);
+
+      if (isNaN(hours) || isNaN(minutes)) return;
+
       const scheduledTime = new Date();
       scheduledTime.setHours(hours, minutes, 0, 0);
 
